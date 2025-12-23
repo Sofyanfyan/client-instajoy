@@ -16,12 +16,15 @@ import {
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     fullName: "",
+    password_confirmation: "",
+    gender: "",
   });
 
   const { login, register } = useAuth();
@@ -34,7 +37,11 @@ const LoginPage = () => {
     try {
       if (isLogin) {
         const result = await login(formData.email, formData.password);
+
+        console.log(result.success);
+
         if (!result.success) {
+          console.log("toast");
           toast({
             variant: "destructive",
             title: "Login Gagal",
@@ -57,6 +64,16 @@ const LoginPage = () => {
           return;
         }
 
+        if (formData.password !== formData.password_confirmation) {
+          toast({
+            variant: "destructive",
+            title: "Password Tidak Sama",
+            description: "Password tidak sama",
+          });
+          setLoading(false);
+          return;
+        }
+
         const result = await register(
           formData.username,
           formData.email,
@@ -73,7 +90,7 @@ const LoginPage = () => {
         } else {
           toast({
             title: "Akun Dibuat! 🎉",
-            description: "Selamat datang di InstaApp",
+            description: "Selamat datang di instaJoy",
           });
         }
       }
@@ -98,7 +115,7 @@ const LoginPage = () => {
             <Instagram className="w-10 h-10 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold gradient-instagram-text">
-            InstaApp
+            InstaJoy
           </h1>
           <p className="text-muted-foreground mt-2">
             {isLogin ? "Masuk ke akun Anda" : "Buat akun baru"}
@@ -109,55 +126,37 @@ const LoginPage = () => {
         <div className="bg-card rounded-2xl p-8 card-shadow border border-border">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Nama Lengkap"
-                    value={formData.fullName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
-                    }
-                    className="pl-12"
-                    required
-                  />
-                </div>
-                <div className="relative">
-                  <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Username"
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        username: e.target.value
-                          .toLowerCase()
-                          .replace(/\s/g, ""),
-                      })
-                    }
-                    className="pl-12"
-                    required
-                  />
-                </div>
-              </>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="pl-12"
+                  required
+                />
+              </div>
             )}
 
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
+                type="text"
+                placeholder="Username"
+                value={formData.username}
                 onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+                  setFormData({
+                    ...formData,
+                    username: e.target.value.toLowerCase().replace(/\s/g, ""),
+                  })
                 }
                 className="pl-12"
                 required
               />
             </div>
-
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -181,7 +180,73 @@ const LoginPage = () => {
                 )}
               </button>
             </div>
-
+            {!isLogin && (
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Password Confirmation"
+                  value={formData.password_confirmation}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      password_confirmation: e.target.value,
+                    })
+                  }
+                  className="pl-12 pr-12"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            )}
+            {!isLogin && (
+              <div className="mt-4 ms-3">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  Gender
+                </label>
+                <div className="mt-2 space-x-4">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      checked={formData.gender === "male"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gender: e.target.value })
+                      }
+                      className="rounded-full border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      Male
+                    </span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      checked={formData.gender === "female"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gender: e.target.value })
+                      }
+                      className="rounded-full border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      Female
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
             <Button
               type="submit"
               variant="instagram"

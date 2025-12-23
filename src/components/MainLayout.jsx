@@ -14,7 +14,7 @@ const MainLayout = () => {
             <Instagram className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold gradient-instagram-text">
-            InstaApp
+            instaJoy
           </span>
         </div>
       </header>

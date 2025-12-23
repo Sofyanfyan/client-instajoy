@@ -41,7 +41,7 @@ const Sidebar = () => {
             <Instagram className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold gradient-instagram-text">
-            InstaApp
+            instaJoy
           </span>
         </div>
       </div>
