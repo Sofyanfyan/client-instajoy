@@ -1,7 +1,20 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import NotFound from "../pages/NotFound";
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import LoginPage from "../pages/LoginPage";
+import { PostProvider } from "../contexts/PostContext";
+import MainLayout from "../components/MainLayout";
+import HomePage from "../pages/HomePage";
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const AuthRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -16,7 +29,24 @@ const AuthRoute = ({ children }) => {
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <AuthRoute>
+            <LoginPage />
+          </AuthRoute>
+        }
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <PostProvider>
+              <MainLayout />
+            </PostProvider>
+          </ProtectedRoute>
+        }>
+        <Route path="/" element={<HomePage />} />
+      </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
