@@ -1,5 +1,14 @@
+import AppRoutes from "./routes/AppRoutes";
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
 function App() {
-  return <div className="bg-green-500 w-screen h-screen">TEST</div>;
+  return (
+    <React.StrictMode>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </React.StrictMode>
+  );
 }
 
 export default App;
