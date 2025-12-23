@@ -7,6 +7,7 @@ import MainLayout from "../components/MainLayout";
 import HomePage from "../pages/HomePage";
 import ExplorePage from "../pages/ExplorePage";
 import CreatePostPage from "../pages/CreatePostPage";
+import NotificationsPage from "../pages/NotificationsPage";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -50,6 +51,7 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/create" element={<CreatePostPage />} />
+        <Route path="/notifications" element={<NotificationsPage />}></Route>
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
