@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { dummyUsers } from "../data/dummyData";
+import { store } from "../stores/index";
+import { login as loginAction } from "../services/authService";
+import { logout as logoutAction, setUserFromStorage } from "../reducers/authReducer";
 
 // Membuat AuthContext tanpa menggunakan tipe TypeScript
 const AuthContext = createContext(undefined);
@@ -16,75 +18,59 @@ export const useAuth = () => {
 // Membuat AuthProvider tanpa menggunakan tipe TypeScript
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState(dummyUsers);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Load user from localStorage on mount
     const storedUser = localStorage.getItem("instaapp_user");
-    if (storedUser) {
-      // eslint-disable-next-line
-      setUser(JSON.parse(storedUser));
-    }
-
-    const storedUsers = localStorage.getItem("instaapp_users");
-    if (storedUsers) {
-      setUsers(JSON.parse(storedUsers));
-    } else {
-      localStorage.setItem("instaapp_users", JSON.stringify(dummyUsers));
+    const storedToken = localStorage.getItem("api_token");
+    
+    if (storedUser && storedToken && storedUser !== "undefined" && storedToken !== "undefined") {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+        
+        // Set user in Redux store
+        store.dispatch(setUserFromStorage({ user: parsedUser, token: storedToken }));
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+        localStorage.removeItem("instaapp_user");
+        localStorage.removeItem("api_token");
+      }
     }
   }, []);
 
-  const login = async (email, password) => {
-    const foundUser = users.find(
-      (u) => u.email === email && u.password === password,
-    );
-
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("instaapp_user", JSON.stringify(foundUser));
-      return { success: true };
+  const login = async (username, password) => {
+    try {
+      const result = await store.dispatch(loginAction({ name: username, password }));
+      
+      if (loginAction.fulfilled.match(result)) {
+        const { user: loggedInUser } = result.payload.data;
+        setUser(loggedInUser);
+        setIsAuthenticated(true);
+        return { success: true };
+      } else {
+        // Get error message from Redux state
+        const state = store.getState();
+        const errorMessage = state.auth.error || "Login gagal";
+        return { success: false, error: errorMessage };
+      }
+    } catch (error) {
+      return { success: false, error: error.message || "Terjadi kesalahan" };
     }
-
-    return { success: false, error: "Email atau password salah" };
   };
 
   const register = async (username, email, password, fullName) => {
-    const existingUser = users.find(
-      (u) => u.email === email || u.username === username,
-    );
-
-    if (existingUser) {
-      if (existingUser.email === email) {
-        return { success: false, error: "Email sudah terdaftar" };
-      }
-      return { success: false, error: "Username sudah digunakan" };
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      username,
-      email,
-      password,
-      fullName,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-      bio: "",
-      followers: 0,
-      following: 0,
-      posts: 0,
-    };
-
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("instaapp_users", JSON.stringify(updatedUsers));
-
-    setUser(newUser);
-    localStorage.setItem("instaapp_user", JSON.stringify(newUser));
-
-    return { success: true };
+    // Register functionality can be implemented similarly with Redux
+    // For now, returning a placeholder response
+    return { success: false, error: "Registrasi belum diimplementasikan" };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("instaapp_user");
+    setIsAuthenticated(false);
+    store.dispatch(logoutAction());
   };
 
   const updateUser = (updates) => {
@@ -92,12 +78,6 @@ export const AuthProvider = ({ children }) => {
       const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
       localStorage.setItem("instaapp_user", JSON.stringify(updatedUser));
-
-      const updatedUsers = users.map((u) =>
-        u.id === user.id ? updatedUser : u,
-      );
-      setUsers(updatedUsers);
-      localStorage.setItem("instaapp_users", JSON.stringify(updatedUsers));
     }
   };
 
@@ -105,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        isAuthenticated,
         login,
         register,
         logout,

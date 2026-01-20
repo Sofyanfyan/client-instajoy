@@ -36,7 +36,7 @@ const LoginPage = () => {
 
     try {
       if (isLogin) {
-        const result = await login(formData.email, formData.password);
+        const result = await login(formData.username, formData.password);
 
         console.log(result.success);
 
