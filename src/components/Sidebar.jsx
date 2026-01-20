@@ -81,15 +81,15 @@ const Sidebar = () => {
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={user?.avatar} alt={user?.username} />
+            <AvatarImage src={user?.avatar?.path} alt={user?.name} />
             <AvatarFallback>
-              {user?.username?.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm truncate">{user?.username}</p>
+            <p className="font-semibold text-sm truncate">{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
-              {user?.fullName}
+              {user?.name}
             </p>
           </div>
           <button
